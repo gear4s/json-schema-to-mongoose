@@ -1,5 +1,5 @@
 ﻿import * as _ from 'lodash';
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 const typeStringToMongooseType = {'string': String, 'boolean': Boolean, 'number': Number, 'integer': Number};
 
@@ -68,7 +68,6 @@ const convertV = (version: any, refSchemas: any, jsonSchema: any): any => {
   }
 
   let converted,
-    result,
     format = jsonSchema.format,
     isRef = !_.isEmpty(jsonSchema.$ref),
     isTypeDate = ('string' === jsonSchema.type) && (('date' === format) || ('date-time' === format)),
@@ -77,60 +76,55 @@ const convertV = (version: any, refSchemas: any, jsonSchema: any): any => {
     subSchema = _.isEmpty(refSchemas) ? false : refSchemas[jsonSchema.$ref],
     subSchemaType = (4 == version) ? subSchemaTypeV4 : subSchemaTypeV3;
 
-  return (result =
-      isRef ?
-        isMongooseRef ?
-          mongooseRef :
-          subSchema ?
-            convertV(version, refSchemas, subSchema) :
-            unsupportedRefValue(jsonSchema)
+    if(isRef) {
+      if(isMongooseRef) {
+        return  mongooseRef;
+      }
+      
+      if(subSchema) {
+        return convertV(version, refSchemas, subSchema)
+      }
 
-        :
-        isTypeDate ?
-          _.reduce(<any> _.omit(jsonSchema, 'type', 'format'), toMongooseParams, {type: typeRefToMongooseType['#/definitions/dateOrDatetime']})
+      return unsupportedRefValue(jsonSchema);
+    }
+    
+    if(isTypeDate) {
+      return _.reduce(<any> _.omit(jsonSchema, 'type', 'format'), toMongooseParams, {type: typeRefToMongooseType['#/definitions/dateOrDatetime']})
+    } 
+    
+    if(_.has(typeStringToMongooseType, jsonSchema.type)) {
+      return _.reduce(jsonSchema, toMongooseParams, {});
+    }
 
-          :
-          _.has(typeStringToMongooseType, jsonSchema.type) ?
-            _.reduce(jsonSchema, toMongooseParams, {})
+    if(jsonSchema.type === 'object') {
+      if(_.isEmpty(jsonSchema.properties)) {
+        return mongoose.Schema.Types.Mixed;
+      }
 
-            :
-            (jsonSchema.type === 'object') ?
-              _.isEmpty(jsonSchema.properties) ?
-                mongoose.Schema.Types.Mixed :
-                ( converted =
-                  _.mapValues(jsonSchema.properties, convertV.bind(null, version, refSchemas)), jsonSchema.required ?
-                  (_.mapValues(converted, subSchemaType.bind(null, jsonSchema))) :
-                  converted )
+      return ( converted =
+        _.mapValues(jsonSchema.properties, convertV.bind(null, version, refSchemas)), jsonSchema.required ?
+        (_.mapValues(converted, subSchemaType.bind(null, jsonSchema))) :
+        converted );
+    } else if(jsonSchema.type === 'array') {
+      if(!_.isEmpty(jsonSchema.items)) {
+        return [convertV(version, refSchemas, jsonSchema.items)];
+      }
 
-              :
-              (jsonSchema.type === 'array') ?
-                !_.isEmpty(jsonSchema.items) ?
-                  [convertV(version, refSchemas, jsonSchema.items)] :
-                  []
+      return [];
+    }
+    
+    if(!_.has(jsonSchema, 'type')) {
+      return mongoose.Schema.Types.Mixed;
+    }
 
-                :
-                !_.has(jsonSchema, 'type') ?
-                  mongoose.Schema.Types.Mixed :
-                  unsupportedJsonSchema(jsonSchema)
-  );
+    return unsupportedJsonSchema(jsonSchema)
 };
 
 const convert = (refSchemas: any, jsonSchema: any): any => {
   let version = 3;
 
-  switch (jsonSchema.$schema) {
-    case 'http://json-schema.org/draft-03/schema#':
-      version = 3;
-      break;
-
-    case 'http://json-schema.org/draft-04/schema#':
-      version = 4;
-      break;
-
-    // backwards compatibility
-    default:
-      version = 3;
-      break;
+  if(jsonSchema.$schema === "http://json-schema.org/draft-04/schema#") {
+    version = 4;
   }
 
   return convertV(version, refSchemas, jsonSchema);

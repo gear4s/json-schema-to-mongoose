@@ -1,7 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var json_schema_1 = require("./lib/json-schema");
-var refs = {
+const json_schema_1 = __importDefault(require("./lib/json-schema"));
+const refs = {
     yep: {
         type: 'string', pattern: '^\\d{3}$'
     }, a: {
@@ -17,7 +20,7 @@ var refs = {
     }
 };
 // noinspection ReservedWordAsName
-var valid = {
+const valid = {
     type: 'object', properties: {
         id: { $ref: 'yep' }, arr: { $ref: 'a' }, address: {
             type: 'object', properties: {
@@ -27,5 +30,5 @@ var valid = {
         }
     }
 };
-var result = json_schema_1.default(refs, valid);
+const result = (0, json_schema_1.default)(refs, valid);
 console.dir(result, { depth: null });
