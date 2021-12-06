@@ -1,6 +1,6 @@
 {
   "name": "@ctrld/json-schema-to-mongoose",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "A library for converting json-schema to mongoose schema",
   "keywords": [
     "json_schema",
@@ -41,9 +41,11 @@
     "test": "jasmine-ts ./test/**/*.ts",
     "build": "tsc",
     "prepare": "npm build",
-    "prepublishOnly" : "npm test && npm run lint"
+    "prepublishOnly": "npm test && npm run lint"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist/**/*"]
+  "files": [
+    "dist/**/*"
+  ]
 }
