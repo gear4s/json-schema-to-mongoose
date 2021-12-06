@@ -39,9 +39,9 @@
   },
   "scripts": {
     "test": "jasmine-ts ./test/**/*.ts",
-    "lint": "eslint ./{lib}/**/*",
+    "lint": "eslint ./lib/**/*",
     "build": "tsc",
-    "prepare": "npm build",
+    "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint"
   },
   "main": "dist/index.js",
