@@ -1,5 +1,5 @@
 {
-  "name": "json-schema-to-mongoose",
+  "name": "@ctrld/json-schema-to-mongoose",
   "version": "0.2.4",
   "description": "A library for converting json-schema to mongoose schema",
   "keywords": [
@@ -28,12 +28,21 @@
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.18",
+    "@typescript-eslint/eslint-plugin": "^5.5.0",
+    "@typescript-eslint/parser": "^5.5.0",
+    "eslint": "^8.4.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "jasmine-ts": "^0.4.0",
+    "prettier": "^2.5.1",
     "typescript": "^4.5.2"
   },
   "scripts": {
     "test": "jasmine-ts ./test/**/*.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "prepare": "npm build",
+    "prepublishOnly" : "npm test && npm run lint"
   },
-  "main": "index"
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts"
 }
